@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WakePlus — Alarm + Subscription</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a31;
+      --panel2:#18213d;
+      --text:#f5f7ff;
+      --muted:#aab3cc;
+      --accent:#7c5cff;
+      --accent2:#9b86ff;
+      --success:#38d39f;
+      --danger:#ff5f7a;
+      --border:rgba(255,255,255,.09);
+      --shadow:0 24px 70px rgba(0,0,0,.35);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(124,92,255,.22), transparent 32%),
+        radial-gradient(circle at 85% 20%, rgba(56,211,159,.14), transparent 28%),
+        var(--bg);
+      color:var(--text);
+    }
+    button,input{font:inherit}
+    .shell{max-width:1050px;margin:0 auto;padding:24px}
+    nav{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 0 34px;
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+    .logo{
+      width:38px;height:38px;border-radius:12px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,var(--accent),#4fd6b7);
+      box-shadow:0 10px 30px rgba(124,92,255,.35)
+    }
+    .badge{
+      font-size:12px;color:#d7dcff;background:rgba(124,92,255,.16);
+      border:1px solid rgba(124,92,255,.3);padding:7px 10px;border-radius:999px
+    }
+    .hero{
+      display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:stretch
+    }
+    .copy,.card{
+      background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.025));
+      border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow)
+    }
+    .copy{padding:46px}
+    h1{font-size:clamp(42px,7vw,76px);line-height:.98;margin:0 0 18px;letter-spacing:-.055em}
+    .gradient{
+      background:linear-gradient(90deg,#fff 0%,#b8adff 45%,#68e6c0 100%);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    .copy p{font-size:18px;line-height:1.6;color:var(--muted);max-width:570px}
+    .features{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+    .chip{
+      padding:10px 13px;border-radius:999px;
+      background:rgba(255,255,255,.05);border:1px solid var(--border);color:#dfe4f7;font-size:14px
+    }
+    .card{padding:28px}
+    .clock{
+      font-size:54px;font-weight:800;letter-spacing:-.04em;margin:4px 0 4px
+    }
+    .date{color:var(--muted);margin-bottom:26px}
+    .field{margin:18px 0}
+    label{display:block;font-size:13px;color:#c9d0e4;margin-bottom:8px}
+    input[type="time"]{
+      width:100%;padding:16px 18px;border-radius:16px;
+      color:var(--text);background:var(--panel2);border:1px solid var(--border);outline:none;
+      font-size:20px
+    }
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{
+      border:0;border-radius:15px;padding:14px 18px;cursor:pointer;font-weight:750;
+      transition:.2s transform,.2s opacity,.2s background;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;flex:1}
+    .btn.secondary{background:rgba(255,255,255,.06);color:#e8ebf8;border:1px solid var(--border)}
+    .btn.danger{background:var(--danger);color:white}
+    .btn.success{background:var(--success);color:#061b14}
+    .status{
+      margin-top:18px;padding:14px 15px;border-radius:15px;
+      background:rgba(255,255,255,.04);border:1px solid var(--border);color:#c8d0e6;font-size:14px
+    }
+    .fine{font-size:12px;color:#7f8aa8;line-height:1.5;margin-top:14px}
+    .footer{padding:28px 4px;color:#77829f;font-size:13px}
+    .modal{
+      position:fixed;inset:0;background:rgba(5,8,18,.78);backdrop-filter:blur(10px);
+      display:none;align-items:center;justify-content:center;padding:20px;z-index:20
+    }
+    .modal.show{display:flex}
+    .modal-card{
+      width:min(520px,100%);background:#11182d;border:1px solid var(--border);border-radius:28px;
+      padding:28px;box-shadow:0 32px 90px rgba(0,0,0,.55)
+    }
+    .ring{
+      width:72px;height:72px;border-radius:22px;display:grid;place-items:center;font-size:34px;
+      background:rgba(255,95,122,.13);border:1px solid rgba(255,95,122,.3);
+      animation:pulse 1s infinite
+    }
+    @keyframes pulse{
+      0%{box-shadow:0 0 0 0 rgba(255,95,122,.35)}
+      70%{box-shadow:0 0 0 18px rgba(255,95,122,0)}
+      100%{box-shadow:0 0 0 0 rgba(255,95,122,0)}
+    }
+    .modal h2{font-size:34px;margin:18px 0 8px}
+    .modal p{color:var(--muted);line-height:1.55}
+    .plan{
+      margin:20px 0;padding:18px;border-radius:18px;background:rgba(124,92,255,.10);
+      border:1px solid rgba(124,92,255,.25);display:flex;justify-content:space-between;gap:20px;align-items:center
+    }
+    .price{font-size:28px;font-weight:800}
+    .price small{font-size:13px;color:var(--muted);font-weight:500}
+    .modal-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .sub-note{font-size:12px;color:#8892ad;margin-top:12px;text-align:center}
+    @media (max-width:800px){
+      .hero{grid-template-columns:1fr}
+      .copy{padding:32px}
+      .modal-actions{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav>
+      <div class="brand"><div class="logo">⏰</div> WakePlus</div>
+      <div class="badge">Alarm + subscription demo</div>
+    </nav>
+
+    <main class="hero">
+      <section class="copy">
+        <h1>Wake up.<br><span class="gradient">Unlock more.</span></h1>
+        <p>
+          Set a browser alarm. When it rings, WakePlus plays a stronger repeating alert and shows an optional subscription offer for premium alarm features.
+        </p>
+        <div class="features">
+          <span class="chip">🔔 Browser alarm</span>
+          <span class="chip">💳 Subscription prompt</span>
+          <span class="chip">📱 Responsive</span>
+          <span class="chip">⚡ No framework needed</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div id="clock" class="clock">--:--:--</div>
+        <div id="date" class="date">Loading date…</div>
+
+        <div class="field">
+          <label for="alarmTime">Alarm time</label>
+          <input id="alarmTime" type="time" />
+        </div>
+
+        <div class="row">
+          <button id="setAlarm" class="btn primary">Set alarm</button>
+          <button id="testAlarm" class="btn secondary">Test now</button>
+        </div>
+
+        <div id="status" class="status">No alarm set.</div>
+        <div class="fine">
+          Keep this tab open for the demo. Browsers may throttle timers in background tabs and may require a click before audio can play.
+        </div>
+      </section>
+    </main>
+
+    <div class="footer">
+      Demo UI only. Replace the payment placeholder with your checkout provider (for example, Stripe Checkout) before production.
+    </div>
+  </div>
+
+  <div id="alarmModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="ring">⏰</div>
+      <h2>Alarm ringing</h2>
+      <p>Your alarm is active. Dismiss it, snooze it for 5 minutes, or optionally subscribe to WakePlus Premium for extra alarm features.</p>
+
+      <div class="plan">
+        <div>
+          <strong>WakePlus Premium</strong><br>
+          <span style="color:#9da7c0;font-size:13px">Unlimited alarms, custom sounds, history</span>
+        </div>
+        <div class="price">$4.99 <small>/month</small></div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="stopAlarm" class="btn danger">Dismiss alarm</button>
+        <button id="snoozeAlarm" class="btn secondary">Snooze 5 min</button>
+        <button id="subscribeBtn" class="btn success">Subscribe</button>
+      </div>
+      <div class="sub-note">Subscription is optional. Connect the Subscribe button to your checkout URL.</div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const clock = document.getElementById('clock');
+  const dateEl = document.getElementById('date');
+  const alarmTime = document.getElementById('alarmTime');
+  const setAlarmBtn = document.getElementById('setAlarm');
+  const testAlarmBtn = document.getElementById('testAlarm');
+  const status = document.getElementById('status');
+  const modal = document.getElementById('alarmModal');
+  const stopAlarmBtn = document.getElementById('stopAlarm');
+  const snoozeAlarmBtn = document.getElementById('snoozeAlarm');
+  const subscribeBtn = document.getElementById('subscribeBtn');
+
+  let alarmValue = null;
+  let alarmTriggeredForDate = null;
+  let audioCtx = null;
+  let beepTimer = null;
+
+  function tickClock() {
+    const now = new Date();
+    clock.textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    dateEl.textContent = now.toLocaleDateString([], {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+    if (alarmValue) {
+      const hhmm = now.toTimeString().slice(0,5);
+      const todayKey = now.toDateString();
+      if (hhmm === alarmValue && alarmTriggeredForDate !== todayKey) {
+        alarmTriggeredForDate = todayKey;
+        triggerAlarm();
+      }
+    }
+  }
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function beep() {
+    ensureAudio();
+
+    const tones = [
+      { f: 920, start: 0.00, len: 0.18 },
+      { f: 1280, start: 0.22, len: 0.18 },
+      { f: 920, start: 0.44, len: 0.18 }
+    ];
+
+    tones.forEach(({f, start, len}) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(f, audioCtx.currentTime + start);
+      gain.gain.setValueAtTime(0.001, audioCtx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + start + len);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(audioCtx.currentTime + start);
+      osc.stop(audioCtx.currentTime + start + len + 0.03);
+    });
+
+    if (navigator.vibrate) {
+      navigator.vibrate([180, 80, 180, 80, 180]);
+    }
+  }
+
+  function startRinging() {
+    stopRinging();
+    beep();
+    beepTimer = setInterval(beep, 1100);
+  }
+
+  function stopRinging() {
+    if (beepTimer) clearInterval(beepTimer);
+    beepTimer = null;
+    if (navigator.vibrate) navigator.vibrate(0);
+  }
+
+  function triggerAlarm() {
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    status.textContent = 'Alarm is ringing.';
+    startRinging();
+  }
+
+  function closeAlarm() {
+    stopRinging();
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    status.textContent = alarmValue ? `Alarm set for ${alarmValue}.` : 'No alarm set.';
+  }
+
+  setAlarmBtn.addEventListener('click', () => {
+    ensureAudio();
+    if (!alarmTime.value) {
+      status.textContent = 'Choose a time first.';
+      return;
+    }
+    alarmValue = alarmTime.value;
+    alarmTriggeredForDate = null;
+    status.textContent = `Alarm set for ${alarmValue}.`;
+    setAlarmBtn.textContent = 'Alarm set ✓';
+    setTimeout(() => setAlarmBtn.textContent = 'Set alarm', 1400);
+  });
+
+  testAlarmBtn.addEventListener('click', () => {
+    ensureAudio();
+    triggerAlarm();
+  });
+
+  stopAlarmBtn.addEventListener('click', closeAlarm);
+
+  snoozeAlarmBtn.addEventListener('click', () => {
+    stopRinging();
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+
+    const snoozeUntil = new Date(Date.now() + 5 * 60 * 1000);
+    const hh = String(snoozeUntil.getHours()).padStart(2, '0');
+    const mm = String(snoozeUntil.getMinutes()).padStart(2, '0');
+
+    alarmValue = `${hh}:${mm}`;
+    alarmTriggeredForDate = null;
+    alarmTime.value = alarmValue;
+    status.textContent = `Snoozed until ${alarmValue}.`;
+  });
+
+  subscribeBtn.addEventListener('click', () => {
+    stopRinging();
+
+    // Replace this demo alert with your real payment URL, e.g.:
+    // window.location.href = 'https://buy.stripe.com/YOUR_PAYMENT_LINK';
+    alert('Payment demo: connect this button to your Stripe Checkout or subscription payment link.');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) closeAlarm();
+  });
+
+  tickClock();
+  setInterval(tickClock, 1000);
+})();
+</script>
+</body>
+</html>
